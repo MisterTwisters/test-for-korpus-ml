@@ -1,0 +1,48 @@
+import requests
+import re
+
+def my_input(input_0):
+    if input_0 == '':
+        input_1 = str('2020-01-19 09:00:00')
+        return input_1
+    else:
+        if re.fullmatch(r"\d\d\d\d-\d\d-\d\d", input_0):
+            input_1 = input_0 + ' 09:00:00'
+            return input_1
+        else:
+            print('Вы ввели дату в неправильном формате, попробуйте ещё раз ("год(yyyy)-номер месяца(mm)-день(dd)").')
+            input_0 = input()
+            return my_input(input_0)
+
+print("Здравствуйте! С помощью этой программы вы сможете подобрать нужный тип смазки для лыж. " \
+      "Для продолжения следуйте инструкциям на экране.\n")
+print("Если соревнования будут проходить в воскресенье 19.01.2020 кликните на строку ввода и нажмите ENTER, \nесли их перенесли на другой из ближайших 6 дней, введите дату числами в формате \"yyyy-mm-dd\".")
+
+input_0 = input()
+input_func = my_input(input_0)
+
+api_url = 'http://api.openweathermap.org/data/2.5/forecast'
+params = {
+    'appid': 'a2923c59dc5511910635a71c1417da3d',
+    'units': 'metric',
+    'lat':	'55.15',
+    'lon': '61.43'
+}
+res = requests.get(api_url, params=params)
+if res.status_code != 200:
+    print("Проверьте соединение с интернетом или обратитесь к разработчику приложения")
+data = res.json()
+
+for three_hour in data['list']:
+    if input_func in three_hour['dt_txt']:
+        temperature = three_hour['main']['temp']
+
+if -5 <= temperature <= 5:
+    ski_wax = 'Type A'
+if -13 <= temperature <= -5:
+    ski_wax = 'Type B'
+if -50 <= temperature <= -13:
+    ski_wax = 'Type C'
+
+answer = 'Для температуры в {} ℃ подходит лыжная смазка "{}", имейте в виду, что она продаётся только до пятницы.\n\nУдачных соревнований!'
+print(answer.format(temperature, ski_wax))
